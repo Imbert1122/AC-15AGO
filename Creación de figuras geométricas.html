@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Figuras Geométricas</title>
+    <style>
+        #canvas-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .canvas {
+            border: 1px solid #000;
+            margin-top: 10px;
+        }
+        .controls {
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <label for="shape">Selecciona la figura:</label>
+        <select id="shape">
+            <option value="rectangle">Rectángulo</option>
+            <option value="circle">Círculo</option>
+            <option value="triangle">Triángulo</option>
+            <option value="rhombus">Romboide</option>
+        </select>
+
+        <label for="width">Ancho:</label>
+        <input type="number" id="width" value="100" min="1">
+
+        <label for="height">Alto:</label>
+        <input type="number" id="height" value="100" min="1">
+
+        <label for="color">Color:</label>
+        <input type="color" id="color" value="#ff0000">
+
+        <label for="format">Formato:</label>
+        <select id="format">
+            <option value="svg">Vectorizado (SVG)</option>
+            <option value="png">Rasterizado (PNG)</option>
+        </select>
+
+        <button onclick="drawShape()">Dibujar</button>
+    </div>
+
+    <div id="canvas-container">
+        <div id="canvas" class="canvas"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.4.1/html2canvas.min.js"></script>
+    <script>
+        function drawShape() {
+            const shape = document.getElementById('shape').value;
+            const width = parseInt(document.getElementById('width').value, 10);
+            const height = parseInt(document.getElementById('height').value, 10);
+            const color = document.getElementById('color').value;
+            const format = document.getElementById('format').value;
+            const canvas = document.getElementById('canvas');
+
+            canvas.innerHTML = ''; // Limpiar canvas
+
+            let element;
+            switch (shape) {
+                case 'rectangle':
+                case 'rhombus':
+                    element = document.createElement('div');
+                    element.style.width = width + 'px';
+                    element.style.height = height + 'px';
+                    element.style.backgroundColor = color;
+                    element.style.border = '1px solid #000';
+                    if (shape === 'rhombus') {
+                        element.style.transform = 'rotate(45deg)';
+                        element.style.transformOrigin = 'center';
+                        element.style.marginTop = (height / 2) + 'px';
+                    }
+                    break;
+
+                case 'circle':
+                    element = document.createElement('div');
+                    element.style.width = height + 'px';
+                    element.style.height = height + 'px';
+                    element.style.backgroundColor = color;
+                    element.style.borderRadius = '50%';
+                    element.style.border = '1px solid #000';
+                    break;
+
+                case 'triangle':
+                    element = document.createElement('div');
+                    element.style.width = '0';
+                    element.style.height = '0';
+                    element.style.borderLeft = width / 2 + 'px solid transparent';
+                    element.style.borderRight = width / 2 + 'px solid transparent';
+                    element.style.borderBottom = height + 'px solid ' + color;
+                    break;
+            }
+            canvas.appendChild(element);
+
+            if (format === 'png') {
+                html2canvas(canvas, {
+                    onrendered: function(canvas) {
+                        const img = canvas.toDataURL('image/png');
+                        const link = document.createElement('a');
+                        link.href = img;
+                        link.download = 'figure.png';
+                        link.click();
+                    }
+                });
+            } else if (format === 'svg') {
+                const svg = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">
+                        <${shape} style="fill:${color};" width="${width}" height="${height}" />
+                    </svg>`;
+                const blob = new Blob([svg], {type: 'image/svg+xml'});
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = 'figure.svg';
+                link.click();
+            }
+        }
+    </script>
+</body>
+</html>
